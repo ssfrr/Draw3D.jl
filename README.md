@@ -1,5 +1,9 @@
 # Draw3D
 
+## Note - NOT STABLE, NOT USABLE
+This is pre-alpha and nothing about it is stable, or sometimes even
+functioning.
+
 Draw3D is a package for 3D graphics with a nice Julian API.
 
 It is built on top of the OpenGL.jl and GLFW.jl packages and takes advantage of

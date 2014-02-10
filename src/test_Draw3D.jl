@@ -1,6 +1,6 @@
 using Draw3D
 
-disp = GLDisplay()
+disp = GLDisplay(800, 600)
 c1 = Cube(1) |> color([1, 0, 0, 1]) |> rotate(30, 0.5, 0.1, 0.9) |> translate(-1, 0, 0)
 c2 = Cube(1) |> color([0, 1, 0, 0.5]) |> rotate(70, 0.1, 0.8, 0.2) |> translate(1, 0, 0)
 em = Empty([c1, c2])
