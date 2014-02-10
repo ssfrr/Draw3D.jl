@@ -35,6 +35,7 @@ abstract Renderable
 
 include("transforms.jl")
 include("meshes.jl")
+include("materials.jl")
 
 ##############################
 # Exported Types and Methods
@@ -111,7 +112,7 @@ function init_gl(width::Number, height::Number)
     glShadeModel(GL_SMOOTH)
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    #glEnable(GL_CULL_FACE)
+    glEnable(GL_CULL_FACE)
     #  Really Nice Perspective Calculations
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
 
@@ -123,7 +124,7 @@ function init_gl(width::Number, height::Number)
     glEnable(GL_LIGHTING)
 
     # scene init stuff, should be moved
-    #glEnable(GL_LIGHT0)
+    glEnable(GL_LIGHT0)
 end
 
 end # module
