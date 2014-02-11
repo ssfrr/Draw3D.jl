@@ -79,6 +79,7 @@ function run_sim()
 
     previous_time = time()
 
+    cam_rot = 20
     while isopen(disp) && !pressed(KEY_ESC)
         elapsed_sec = time() - previous_time
         previous_time += elapsed_sec
@@ -87,10 +88,11 @@ function run_sim()
         world = Empty(hcat(cubes, balls_))
 
         prepare(disp)
-        render(world |> rotate(20, 0, 1, 0) |> translate(0, -5, -10) |> rotate(30, 1, 0, 0))
+        render(world |> rotate(cam_rot, 0, 1, 0) |> translate(0, -5, -10) |> rotate(30, 1, 0, 0))
         swap(disp)
 
         states = map(s -> physicsify(s, elapsed_sec), states)
+        cam_rot += 10 * elapsed_sec
     end
     close(disp)
 end
