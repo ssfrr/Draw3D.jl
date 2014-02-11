@@ -71,7 +71,7 @@ function run_sim()
     # back to front, so transparency works!
     for z in -3:3, x in -3:3
         cubes[i] = Cube() |> color([0, 1, 0, 1])|> translate(x*spread, -0.5, z*spread)
-        balls[i] = Sphere(1) |> color([rand(), rand(), rand(), 0.7]) |> translate(x*spread, 0.5, z*spread)
+        balls[i] = Sphere(2) |> color([rand(), rand(), rand(), 0.7]) |> translate(x*spread, 0.5, z*spread)
         i += 1
     end
 
