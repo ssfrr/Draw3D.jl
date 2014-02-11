@@ -66,13 +66,14 @@ end
 # a sphere created by starting with a Tetrahedron
 type Sphere <: Renderable
     vertices::Array{GLfloat}
-    faces::Array{Int} # array of index triples into the vertices array
 
     function Sphere(subdivs::Integer)
         # note we transpose to get column vectors
-        vertices = GLfloat[1 1 1; -1 -1 1; -1 1 -1; 1 -1 -1]' ./ norm([1 1 1])
-        faces = Int[1 2 4; 1 3 2; 1 4 3; 2 3 4]'
-        new(vertices, faces)
+        unique_verts = GLfloat[1 1 1; -1 -1 1; -1 1 -1; 1 -1 -1]' / (norm([1 1 1]) * 2)
+        # verts is the unique points, each 3 points in faces is an index into verts
+        faces = [1, 2, 4,  1, 3, 2,  1, 4, 3,  2, 3, 4]
+        verts = unique_verts[:, faces]
+        new(subdivide(verts, subdivs))
     end
     Sphere() = Sphere(1)
 end
@@ -82,10 +83,31 @@ function render(m::Sphere, args...)
     # iterate through each element of faces, each of which is an index into the
     # vertex array. We don't care about the face order, but we rely on the fact that
     # the vertices for each face are stored in order
-    for f in m.faces
+    for i in 1:size(m.vertices, 2)
         # we're making a sphere, so the vertices are also the normals
-        glNormal3fv(m.vertices[:, f])
-        glVertex(m.vertices[:, f])
+        glNormal3fv(m.vertices[:, i])
+        glVertex(m.vertices[:, i])
     end
     glEnd()
+end
+
+
+# each set of 3 vertices are assumed to define a triangle.
+function subdivide{T <: Real}(vertices::Array{T}, n::Integer = 1)
+    if n <= 0
+        return vertices
+    end
+    new_verts = zeros(T, 3, size(vertices, 2) * 3)
+    dest = 1
+    for i in 1:3:size(vertices, 2)
+        center_vtx = mean(vertices[:, i:i+2], 2)
+        # normalize because we know we're making a sphere
+        center_vtx = center_vtx / (norm(center_vtx) * 2)
+        # make 3 new faces from each input face
+        new_verts[:,   dest:dest+2] = hcat(vertices[:, [  i,i+1]], center_vtx)
+        new_verts[:, dest+3:dest+5] = hcat(vertices[:, [i+1,i+2]], center_vtx)
+        new_verts[:, dest+6:dest+8] = hcat(vertices[:, [i+2,i  ]], center_vtx)
+        dest += 9
+    end
+    return subdivide(new_verts, n - 1)
 end
