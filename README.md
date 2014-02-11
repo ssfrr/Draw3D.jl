@@ -44,3 +44,9 @@ Transparent objects are assumed to be convex, and are rendered by first
 rendering the faces pointing away from the camera and then those pointing
 towards. Handling this properly for non-convex meshes requires z-sorting
 the faces, which we don't do right now.
+
+### Dependencies
+
+* GLFW.jl
+* OpenGL.jl
+* libglfw2

@@ -1,4 +1,4 @@
-export Square, Cube
+export Square, Cube, Sphere
 
 
 ###################
@@ -49,7 +49,6 @@ type Cube <: Renderable
     Cube() = Cube(5)
 end
 
-
 function render(m::Cube, args...)
     for rot in [0, 90, 180, 270]
         render(m.front |> rotate(rot, 0, 1, 0), args...)
@@ -58,4 +57,35 @@ function render(m::Cube, args...)
     for rot in [90, 270]
         render(m.front |> rotate(rot, 1, 0, 0), args...)
     end
+end
+
+###################
+# Sphere
+###################
+
+# a sphere created by starting with a Tetrahedron
+type Sphere <: Renderable
+    vertices::Array{GLfloat}
+    faces::Array{Int} # array of index triples into the vertices array
+
+    function Sphere(subdivs::Integer)
+        # note we transpose to get column vectors
+        vertices = GLfloat[1 1 1; -1 -1 1; -1 1 -1; 1 -1 -1]' ./ norm([1 1 1])
+        faces = Int[1 2 4; 1 3 2; 1 4 3; 2 3 4]'
+        new(vertices, faces)
+    end
+    Sphere() = Sphere(1)
+end
+
+function render(m::Sphere, args...)
+    glBegin(GL_TRIANGLES);
+    # iterate through each element of faces, each of which is an index into the
+    # vertex array. We don't care about the face order, but we rely on the fact that
+    # the vertices for each face are stored in order
+    for f in m.faces
+        # we're making a sphere, so the vertices are also the normals
+        glNormal3fv(m.vertices[:, f])
+        glVertex(m.vertices[:, f])
+    end
+    glEnd()
 end

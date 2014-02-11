@@ -21,6 +21,11 @@ using GLU
 export GLDisplay, Renderable
 export prepare, swap, isopen, render, close
 
+# re-export from GLFW
+pressed = GLFW.GetKey
+export pressed
+include("keyexports.jl")
+
 ###################
 # Abstract Types
 ###################
@@ -69,7 +74,7 @@ type GLDisplay
 end
 
 function isopen(disp)
-    GLFW.GetWindowParam(GLFW.OPENED) && !GLFW.GetKey(GLFW.KEY_ESC)
+    GLFW.GetWindowParam(GLFW.OPENED)
 end
 
 function prepare(disp::GLDisplay)
@@ -85,8 +90,11 @@ function swap(disp::GLDisplay)
 end
 
 function close(disp::GLDisplay)
+    global _glfw_init
     GLFW.CloseWindow()
+    info("Terminating GLFW")
     GLFW.Terminate()
+    _glfw_init = false
 end
 
 #######################
