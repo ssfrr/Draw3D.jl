@@ -134,6 +134,7 @@ function init_gl(width::Number, height::Number)
 
     # scene init stuff, should be moved
     glEnable(GL_LIGHT0)
+    glLightfv(GL_LIGHT0, GL_POSITION, GLfloat[1, 1, 1, 1])
 end
 
 end # module
