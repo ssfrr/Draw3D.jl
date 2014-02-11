@@ -68,10 +68,32 @@ type Sphere <: Renderable
     vertices::Array{GLfloat}
 
     function Sphere(subdivs::Integer)
+        # isohedron from the redbook
+        const X = .525731112119133606 / 2
+        const Z = .850650808352039932 / 2
+
         # note we transpose to get column vectors
-        unique_verts = GLfloat[1 1 1; -1 -1 1; -1 1 -1; 1 -1 -1]' / (norm([1 1 1]) * 2)
-        # verts is the unique points, each 3 points in faces is an index into verts
-        faces = [1, 2, 4,  1, 3, 2,  1, 4, 3,  2, 3, 4]
+        unique_verts = GLfloat[
+            -X 0.0 Z; X 0.0 Z; -X 0.0 -Z; X 0.0 -Z;
+            0.0 Z X; 0.0 Z -X; 0.0 -Z X; 0.0 -Z -X;
+            Z X 0.0; -Z X 0.0; Z -X 0.0; -Z -X 0.0]'
+
+        # indices into the unique_verts array
+        faces = Int[
+            12,3,8, 6,3,10, 3,12,10, 12,1,10, 11,2,7,
+             7,2,1, 7,1,12, 7,12,8,  11,7,8,  4,11,8,
+             4,8,3, 4,3,6,  9,4,6,   11,4,9,  2,11,9,
+             2,9,5, 9,6,5,  5,6,10,  5,10,1,  2,5,1]
+
+             # the original redbook indices (reverse order):
+            #1,5,2, 1,10,5, 10,6,5, 5,6,9, 5,9,2,
+            #9,11,2, 9,4,11, 6,4,9, 6,3,4, 3,8,4,
+            #8,11,4, 8,7,11, 8,12,7, 12,1,7, 1,2,7,
+            #7,2,11, 10,1,12, 10,12,3, 10,3,6, 8,3,12
+
+
+
+
         verts = unique_verts[:, faces]
         new(subdivide(verts, subdivs))
     end
@@ -80,9 +102,6 @@ end
 
 function render(m::Sphere, args...)
     glBegin(GL_TRIANGLES);
-    # iterate through each element of faces, each of which is an index into the
-    # vertex array. We don't care about the face order, but we rely on the fact that
-    # the vertices for each face are stored in order
     for i in 1:size(m.vertices, 2)
         # we're making a sphere, so the vertices are also the normals
         glNormal3fv(m.vertices[:, i])
@@ -97,17 +116,23 @@ function subdivide{T <: Real}(vertices::Array{T}, n::Integer = 1)
     if n <= 0
         return vertices
     end
-    new_verts = zeros(T, 3, size(vertices, 2) * 3)
+    new_verts = zeros(T, 3, size(vertices, 2) * 4)
+    mid = zeros(T, 3, 3)
     dest = 1
     for i in 1:3:size(vertices, 2)
-        center_vtx = mean(vertices[:, i:i+2], 2)
-        # normalize because we know we're making a sphere
-        center_vtx = center_vtx / (norm(center_vtx) * 2)
+        # get the normalized midpoint for each pair of vertices
+        mid[:, 1] = mean(vertices[:, [  i, i+1]], 2)
+        mid[:, 2] = mean(vertices[:, [i+1, i+2]], 2)
+        mid[:, 3] = mean(vertices[:, [i+2, i  ]], 2)
+        mid[:, 1] = mid[:, 1] / norm(mid[:, 1]) / 2
+        mid[:, 2] = mid[:, 2] / norm(mid[:, 2]) / 2
+        mid[:, 3] = mid[:, 3] / norm(mid[:, 3]) / 2
         # make 3 new faces from each input face
-        new_verts[:,   dest:dest+2] = hcat(vertices[:, [  i,i+1]], center_vtx)
-        new_verts[:, dest+3:dest+5] = hcat(vertices[:, [i+1,i+2]], center_vtx)
-        new_verts[:, dest+6:dest+8] = hcat(vertices[:, [i+2,i  ]], center_vtx)
-        dest += 9
+        new_verts[:,   dest:dest+ 2] = hcat(vertices[:,   i], mid[:, [1, 3]])
+        new_verts[:, dest+3:dest+ 5] = hcat(vertices[:, i+1], mid[:, [2, 1]])
+        new_verts[:, dest+6:dest+ 8] = hcat(vertices[:, i+2], mid[:, [3, 2]])
+        new_verts[:, dest+9:dest+11] = mid
+        dest += 12
     end
     return subdivide(new_verts, n - 1)
 end

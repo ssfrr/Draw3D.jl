@@ -130,6 +130,7 @@ function init_gl(width::Number, height::Number)
     glDepthFunc(GL_LEQUAL)
     glClearDepth(1.0)
     glEnable(GL_LIGHTING)
+    #glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     # scene init stuff, should be moved
     glEnable(GL_LIGHT0)
